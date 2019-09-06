@@ -1,0 +1,26 @@
+Masters, Slaves, and Piconets
+
+
+Bluetooth networks (piconets) use a master/slave model. Master talk to slave. Slave not master.
+
+Address
+
+48-bit unique address, BD_ADDR. 24 MSBs is Organization Unique Indentifier (OUI)
+
+Name
+
+A
+
+Profile
+
+- Serial Port Profile (SPP): RS232 over the air! the profile that I need!
+- Human Interface Device (HID)
+- Hands-Free Profile (HFP) and Headset Profile (HSP)
+- Advanced Audio Distribution Profile (A2DP)
+- A/V Remote Control Profile (AVRCP)
+
+Version:
+
+v4.0 : classic, high speed and low energy. BLE 1Mbps
+
+

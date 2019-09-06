@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Demo</title>
+    <link rel="stylesheet" href="revealjs/css/reveal.css">
+    <link rel="stylesheet" href="revealjs/css/white.css">
+    <script src="main.js"></script>
+    <style>
+        .i {
+            width: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: inline;
+        }
+
+        .reveal {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="i" id="user"></div>
+
+        <div class="slides">
+
+            <section id="基于加速度计的手势检测" class="slide level1">
+                <h1>基于加速度计的手势检测</h1>
+            </section>
+            <section id="基本设想" class="slide level1">
+                <h1>基本设想</h1>
+                <p>人做手势时会产生振动。通过测量加速度计的频率特性，可以判断人的手势。</p>
+            </section>
+            <section id="系统组成" class="slide level1">
+                <h1>系统组成</h1>
+                <ul>
+                    <li>传感装置：MPU6050加速度计 + esp32</li>
+                    <li>数据分析：串口UART传输 + 特征分析 + SVM分类</li>
+                    <li>上层应用：就是这个demo</li>
+                </ul>
+            </section>
+            <section id="传感装置" class="slide level1">
+                <h1>传感装置</h1>
+                <ul>
+                    <li>主要解决2个问题：传输速率够不够，传来的数据时序对不对。</li>
+                    <li>利用MPU6050加速度计的FIFO，可以确保时序是正确的。</li>
+                    <li>把数据通过串口直接以二进制传输。大小端</li>
+                    <li>设置了开机自启动，进行校准</li>
+                </ul>
+            </section>
+            <section id="数据分析数据传输" class="slide level1">
+                <h1>数据分析——数据传输</h1>
+                <ul>
+                    <li>UART服务程序，接收数据，维护一个传输队列</li>
+                    <li>esp32会自动加换行符……</li>
+                    <li>利用多线程维持逻辑的清晰</li>
+                </ul>
+            </section>
+            <section id="数据分析特征分析" class="slide level1">
+                <h1>数据分析——特征分析</h1>
+                <ul>
+                    <li>目的：分析频率特征，摆脱绝对位置和绝对运动的影响</li>
+                    <li>信号预处理：
+                        <ol type="1">
+                            <li>Hamming加窗谱分析，避免泄漏。</li>
+                            <li>X, Y, Z三个能量谱取大值</li>
+                            <li>取10个周期的平均</li>
+                        </ol>
+                    </li>
+                    <li>特征提取：
+                        <ol type="1">
+                            <li>平均，方差，最大的5个峰的值。使用sigmoid函数进行了归一化</li>
+                            <li>每个频段的和，band ratio</li>
+                        </ol>
+                    </li>
+                </ul>
+            </section>
+            <section id="数据分析svm分类" class="slide level1">
+                <h1>数据分析——SVM分类</h1>
+                <ul>
+                    <li>Support Vector Machine：支持向量机。我使用的是libsvm</li>
+                    <li>几个参数：kernel，多项式的系数，loss function的系数</li>
+                    <li>对特征构成的特征向量进行分类</li>
+                </ul>
+            </section>
+            <section id="数据分析数据采集" class="slide level1">
+                <h1>数据分析——数据采集</h1>
+                <ul>
+                    <li>做动作，采集数据</li>
+                    <li>手动删改数据——没法连续做某些动作</li>
+                    <li>什么都不干，采集数据</li>
+                </ul>
+            </section>
+            <section id="演示项目" class="slide level1">
+                <h1>演示项目</h1>
+                <p>See for your self</p>
+            </section>
+            <section id="问题和改进" class="slide level1">
+                <h1>问题和改进</h1>
+                <ol type="1">
+                    <li>采集数据太费劲，想想好办法</li>
+                    <li>好的特征，尤其是能体现频率特性的特征</li>
+                    <li>耦合问题？</li>
+                </ol>
+            </section>
+        </div>
+    </div>
+    <script src="revealjs/js/reveal.js"></script>
+    <script>
+        Reveal.initialize();
+        reveal_handler = Reveal
+        
+        Reveal.addEventListener('slidechanged', function( event ) {
+    // event.previousSlide, event.currentSlide, event.indexh, event.indexv
+            ws.send(JSON.stringify({action: 'change', value : Reveal.getState()}));
+        });
+    </script>
+
+</body>
+
+</html>
